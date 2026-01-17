@@ -3,7 +3,7 @@ attrs==25.4.0
 beautifulsoup4==4.14.3   
 blinker==1.9.0
 brotli==1.2.0
-libpango-1.0-0
+libpango==1.0-0
 cachetools==6.2.4        
 certifi==2026.1.4        
 cffi==2.0.0
