@@ -352,7 +352,7 @@ with col2:
                                 <style>
                                     @page {{
                                         size: A4;
-                                        margin: 2.3cm 1cm 2cm 1cm;
+                                        margin: 2.3cm 1cm 2cm 1.5cm;
                                         
                                         @top-left {{
                                             /* Логотип как фон с маленьким размером */
