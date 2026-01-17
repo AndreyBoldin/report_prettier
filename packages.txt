@@ -1,0 +1,13 @@
+libpango-1.0-0
+libpangoft2-1.0-0
+libpangocairo-1.0-0
+libgdk-pixbuf-2.0-0
+libcairo2
+libffi-dev
+libxml2-dev
+libxslt-dev
+fontconfig
+fonts-dejavu-core
+fonts-liberation
+fonts-noto-cjk
+fonts-noto-color-emoji
