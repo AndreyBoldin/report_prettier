@@ -156,7 +156,7 @@ with col2:
                 processed_text = re.sub(pattern_h2, replace_match_h2, processed_text)
                 return processed_text
             
-            # Функция для преобразования Markdown в HTML
+
             def markdown_to_html_with_styles(text):
                 """
                 Преобразует Markdown в HTML с сохранением специальных стилей
@@ -164,7 +164,29 @@ with col2:
                 # Сначала заменяем специальные заголовки с фоном
                 processed_text = highlight_h2_h3(fix_trailing_spaces(text))
                 
-                # Преобразуем оставшийся Markdown в HTML
+                # Разделяем текст на блоки: стилизованные заголовки и остальное
+                lines = processed_text.split('\n')
+                processed_blocks = []
+                current_block = []
+                
+                for line in lines:
+                    # Проверяем, является ли строка стилизованным заголовком
+                    if '<div style=' in line and ('background-color: #297fb9' in line or 'background-color: #deeaf6' in line):
+                        # Если есть накопленный блок, обрабатываем его
+                        if current_block:
+                            processed_blocks.append('\n'.join(current_block))
+                            current_block = []
+                        # Стилизованный заголовок добавляем как отдельный блок
+                        processed_blocks.append(line)
+                    else:
+                        current_block.append(line)
+                
+                # Добавляем последний блок, если он есть
+                if current_block:
+                    processed_blocks.append('\n'.join(current_block))
+                
+                # Обрабатываем каждый блок
+                result_blocks = []
                 extensions = [
                     'markdown.extensions.extra',
                     'markdown.extensions.tables',
@@ -173,40 +195,19 @@ with col2:
                     'markdown.extensions.toc',
                 ]
                 
-                # Разделяем на строки для обработки
-                lines = processed_text.split('\n')
-                result_lines = []
-                
-                for line in lines:
-                    # Проверяем, является ли строка уже HTML (содержит <div> с фоном)
-                    if '<div style=' in line and ('background-color: #297fb9' in line or 'background-color: #deeaf6' in line):
-                        # Это наш стилизованный заголовок - оставляем как есть
-                        result_lines.append(line)
-                    elif line.strip() == '':
-                        # Пустая строка
-                        result_lines.append('')
+                for block in processed_blocks:
+                    # Если блок - это стилизованный заголовок, оставляем как есть
+                    if block.strip().startswith('<div style='):
+                        result_blocks.append(block)
                     else:
-                        # Это обычный Markdown - преобразуем
-                        try:
-                            # Для коротких строк преобразуем отдельно
-                            html_line = markdown.markdown(line, extensions=extensions)
-                            #  отдельно обработать списки с сохранением нумерации li oli ul ol
-                        
-                            # Убираем обертки <p>, если они есть
-                            if html_line.startswith('<p>') and html_line.endswith('</p>'):
-                                html_line = html_line[3:-4]
-                            result_lines.append(html_line)
-                        except:
-                            result_lines.append(line)
+                        # Преобразуем Markdown блок целиком
+                        html_block = markdown.markdown(block, extensions=extensions)
+                        result_blocks.append(html_block)
                 
-                # Объединяем обратно
-                result_html = '\n'.join(result_lines)#333333n(result_lines)
-                
-                # Преобразуем весь текст для гарантии
-                full_html = markdown.markdown(result_html, extensions=extensions)
+                # Объединяем все блоки
+                full_html = '\n'.join(result_blocks)
                 
                 return full_html
-            
             # Преобразуем контент для предпросмотра
             processed_content = markdown_to_html_with_styles(editor_content)
             
