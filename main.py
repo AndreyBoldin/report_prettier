@@ -4,8 +4,7 @@ import re
 import markdown
 from datetime import datetime
 from io import BytesIO
-import weasyprint
-from weasyprint import HTML, CSS
+from weasyprint import HTML
 import tempfile
 import os
 
@@ -101,6 +100,88 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+legend= """<p style="color: #333333; font-weight: bold;">Легенда (мини-словарь):</p>
+    
+                                <table class="legend-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Термин</th>
+                                            <th>Описание</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>z-score</strong></td>
+                                            <td>
+                                                <span class="math-notation">|z| &lt; 1</span> — в коридоре; 
+                                                <span class="math-notation">1 ≤ |z| &lt; 2</span> — смещение; 
+                                                <span class="math-notation">|z| ≥ 2</span> — выраженное ограничение 
+                                                <em>(для навигации в динамике)</em>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td><strong>Паттерн<br>(EM/IS/AA и т.д.)</strong></td>
+                                            <td>
+                                                Это устойчивое сочетание метаболитов/соотношений, образующее метаболический профиль и получающее статус: 
+                                                <span class="highlight">лимитирующий</span> / 
+                                                <span class="highlight">потенциально лимитирующий</span> / 
+                                                <span class="highlight">контекстный</span>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td><strong>Лимитирующий</strong></td>
+                                            <td>Чаще всего ограничивает переносимость нагрузок/восстановление в текущий момент</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td><strong>Функциональные режимы (FR)</strong></td>
+                                            <td>
+                                                Это интегральные «сценарии работы» ключевых регуляторно-метаболических паттернов 
+                                                (детокси-редокс, адаптация/стресс, энергетика, восстановление, иммунно-воспалительный и др.). 
+                                                FR показывает какой контур сейчас реально задаёт переносимость нагрузки и восстановление, 
+                                                чаще через регуляторные механизмы, а не «организму поломку».
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td><strong>FR "активен"</strong></td>
+                                            <td>Когда присутствуют его паттерны-драйверы</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td><strong>FR "ведущий/лимитирующий"</strong></td>
+                                            <td>Когда в ядре есть лимитирующий паттерн и именно он определяет управляемость траектории</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td><strong>Каждый активный FR читается как связка</strong></td>
+                                            <td>
+                                                <strong>(1)</strong> Что означает функционально → 
+                                                <strong>(2)</strong> Какими паттернами сформирован → 
+                                                <strong>(3)</strong> Что уместно клинически проверить → 
+                                                <strong>(4)</strong> Навигационный рычаг наблюдения на 2–6 недель.
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td><strong>Управляемость траектории</strong><br>(высокая/сохранённая/ограниченная/напряжённая)</td>
+                                            <td>Насколько предсказуемо профиль отвечает на изменение режима за 4–6 недель (цель — двигать к 0)</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td><strong>Цель динамики</strong></td>
+                                            <td>
+                                                Вести ключевые маркеры и соотношения к <span class="math-notation">z=0</span> 
+                                                и подтверждать выводы клиническими данными; 
+                                                <em style="color:#d84040 !important">отчёт не является диагнозом</em>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>"""
+                        
+
 if 'editor_content' not in st.session_state: 
     st.session_state.editor_content = "# Пример Markdown\n\n## **0. Общая информация**\n\n## **1. Основные данные**\n\n## **2. Результаты анализа**\n\n### **Подзаголовок**\n\n### Это заголовок уровня 3\n\nВозможности Markdown:\n1. **Жирный** и *курсивный* текст\n2. Нумерованные списки\n3. Маркированные пункты\n   - Элемент А\n   - Элемент Б\n\n### Пример HTML:\n<button style='background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: p#333333nter;'>Нажми меня!</button>\n\n### Пример таблицы:\n| Столбец 1 | Столбец 2 | Столбец 3 |\n|-----------|-----------|-----------|\n| Строка 1, Колонка 1 | Строка 1, Колонка 2 | Строка 1, Колонка 3 |\n| Строка 2, Колонка 1 | Строка 2, Колонка 2 | Строка 2, Колонка 3 |\n\n> Это блок цитаты.\n\n---"
 
@@ -116,6 +197,12 @@ logo_base64 = image_path_to_base64("logo.jpg")
 
 if "header" not in st.session_state:
     st.session_state.header = "ОТЧЕТ МЕТАБОСКАН - ТОЛЬКО ДЛЯ ВРАЧА"
+    
+if "legend" not in st.session_state:
+    st.session_state.legend = ""
+
+if "show_legend" not in st.session_state:
+    st.session_state.show_legend = False
 
 with st.sidebar:
     st.write("**Изменения заголовка:**")
@@ -127,6 +214,22 @@ with st.sidebar:
         label_visibility="collapsed"
     )
     
+    # Radio add legend that session state = legend, if no than == ""
+    legend_option = st.radio(
+        "Добавить легенду?",
+        ["Без легенды", "С легендой"],
+        index=1 if st.session_state.show_legend else 0,
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+    # Обновляем session_state в зависимости от выбора
+    if legend_option == "С легендой":
+        st.session_state.show_legend = True
+        st.session_state.legend = legend
+    else:
+        st.session_state.show_legend = False
+        st.session_state.legend = ""
+        
     # Обновляем session_state при изменении
     if new_header != st.session_state.header:
         st.session_state.header = new_header
@@ -385,8 +488,10 @@ with col2:
                 
                 with col_pdf:
                     if st.button("📄 PDF", use_container_width=True):
+                        
+                            
                         # Функция для создания PDF с header и footer
-                        def create_pdf_with_header_footer(content, filename):
+                        def create_pdf_with_header_footer(content, legend):
                             # Создаем временный HTML файл
                             temp_html = tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8')
                             
@@ -605,141 +710,58 @@ with col2:
                                         white-space: nowrap; /* Предотвращает перенос текста */
                                     }}
                                     
-        .legend-table {{
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 14px;
-        }}
-        
-        .legend-table th {{
-            background-color: #f5f5f5;
-            color: black;
-            font-weight: bold;
-            text-align: left;
-            padding: 8px 20px;
-            border: 1px solid #dadada !important;
-            font-size: 13px;
-        }}
-        
-        .legend-table td {{
-            padding: 10px 15px;
-            border: 1px solid #dadada !important;
-            vertical-align: top;
-            line-height: 1.4;
-            color: #333333;
-        }}
-        .math-notation {{
-            font-style: bold;
-            font-family: 'Times New Roman', serif;
-        }}
-        
-        
-        
-        .section-title {{
-            color: #0066cc;
-            font-weight: bold;
-            margin-top: 15px;
-            margin-bottom: 5px;
-        }}
-        
-        .note {{
-            font-size: 12px;
-            color: #666;
-            font-style: italic;
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-left: 4px solid #ffa500;
-        }}
+                                    .legend-table {{
+                                        width: 100%;
+                                        border-collapse: collapse;
+                                        margin-top: 15px;
+                                        font-size: 14px;
+                                    }}
+                                    
+                                    .legend-table th {{
+                                        background-color: #f5f5f5;
+                                        color: black;
+                                        font-weight: bold;
+                                        text-align: left;
+                                        padding: 8px 20px;
+                                        border: 1px solid #dadada !important;
+                                        font-size: 13px;
+                                    }}
+                                    
+                                    .legend-table td {{
+                                        padding: 10px 15px;
+                                        border: 1px solid #dadada !important;
+                                        vertical-align: top;
+                                        line-height: 1.4;
+                                        color: #333333;
+                                    }}
+                                    .math-notation {{
+                                        font-style: bold;
+                                        font-family: 'Times New Roman', serif;
+                                    }}
+                                    
+                                    
+                                    
+                                    .section-title {{
+                                        color: #0066cc;
+                                        font-weight: bold;
+                                        margin-top: 15px;
+                                        margin-bottom: 5px;
+                                    }}
+                                    
+                                    .note {{
+                                        font-size: 12px;
+                                        color: #666;
+                                        font-style: italic;
+                                        margin-top: 15px;
+                                        padding: 10px;
+                                        background-color: #f9f9f9;
+                                        border-left: 4px solid #ffa500;
+                                    }}
                                 </style>
                             </head>
                             <body>
                                 
-                                
-
-                                
-                                
-                                <p style="color: #333333; font-weight: bold;">Легенда (мини-словарь):</p>
-    
-                                <table class="legend-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Термин</th>
-                                            <th>Описание</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><strong>z-score</strong></td>
-                                            <td>
-                                                <span class="math-notation">|z| &lt; 1</span> — в коридоре; 
-                                                <span class="math-notation">1 ≤ |z| &lt; 2</span> — смещение; 
-                                                <span class="math-notation">|z| ≥ 2</span> — выраженное ограничение 
-                                                <em>(для навигации в динамике)</em>
-                                            </td>
-                                        </tr>
-                                        
-                                        <tr>
-                                            <td><strong>Паттерн<br>(EM/IS/AA и т.д.)</strong></td>
-                                            <td>
-                                                Это устойчивое сочетание метаболитов/соотношений, образующее метаболический профиль и получающее статус: 
-                                                <span class="highlight">лимитирующий</span> / 
-                                                <span class="highlight">потенциально лимитирующий</span> / 
-                                                <span class="highlight">контекстный</span>
-                                            </td>
-                                        </tr>
-                                        
-                                        <tr>
-                                            <td><strong>Лимитирующий</strong></td>
-                                            <td>Чаще всего ограничивает переносимость нагрузок/восстановление в текущий момент</td>
-                                        </tr>
-                                        
-                                        <tr>
-                                            <td><strong>Функциональные режимы (FR)</strong></td>
-                                            <td>
-                                                Это интегральные «сценарии работы» ключевых регуляторно-метаболических паттернов 
-                                                (детокси-редокс, адаптация/стресс, энергетика, восстановление, иммунно-воспалительный и др.). 
-                                                FR показывает какой контур сейчас реально задаёт переносимость нагрузки и восстановление, 
-                                                чаще через регуляторные механизмы, а не «организму поломку».
-                                            </td>
-                                        </tr>
-                                        
-                                        <tr>
-                                            <td><strong>FR "активен"</strong></td>
-                                            <td>Когда присутствуют его паттерны-драйверы</td>
-                                        </tr>
-                                        
-                                        <tr>
-                                            <td><strong>FR "ведущий/лимитирующий"</strong></td>
-                                            <td>Когда в ядре есть лимитирующий паттерн и именно он определяет управляемость траектории</td>
-                                        </tr>
-                                        
-                                        <tr>
-                                            <td><strong>Каждый активный FR читается как связка</strong></td>
-                                            <td>
-                                                <strong>(1)</strong> Что означает функционально → 
-                                                <strong>(2)</strong> Какими паттернами сформирован → 
-                                                <strong>(3)</strong> Что уместно клинически проверить → 
-                                                <strong>(4)</strong> Навигационный рычаг наблюдения на 2–6 недель.
-                                            </td>
-                                        </tr>
-                                        
-                                        <tr>
-                                            <td><strong>Управляемость траектории</strong><br>(высокая/сохранённая/ограниченная/напряжённая)</td>
-                                            <td>Насколько предсказуемо профиль отвечает на изменение режима за 4–6 недель (цель — двигать к 0)</td>
-                                        </tr>
-                                        
-                                        <tr>
-                                            <td><strong>Цель динамики</strong></td>
-                                            <td>
-                                                Вести ключевые маркеры и соотношения к <span class="math-notation">z=0</span> 
-                                                и подтверждать выводы клиническими данными; 
-                                                <em style="color:#d84040 !important">отчёт не является диагнозом</em>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                {legend}
                                 <div class="content">
                                     {content}
                                 </div>
@@ -763,9 +785,10 @@ with col2:
                             
                             except Exception as e:
                                 st.error(f"Ошибка при создании PDF: {str(e)}")
-                                
+
+                    
                         # Создаем PDF
-                        pdf_bytes = create_pdf_with_header_footer(processed_content, f"{file_name}.pdf")
+                        pdf_bytes = create_pdf_with_header_footer(processed_content, legend=st.session_state.legend)
                         
                         # Кодируем для скачивания
                         b64_pdf = base64.b64encode(pdf_bytes).decode()
