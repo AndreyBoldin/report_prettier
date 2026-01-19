@@ -26,6 +26,13 @@ st.markdown("""
         text-align-last: left;
     }
     
+    img {
+            display: block !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            
+        }
+    
     .stMarkdown li {
         color: #333333;
         font-family: 'Helvetica', 'Arial', sans-serif;
@@ -98,14 +105,55 @@ if 'editor_content' not in st.session_state:
     st.session_state.editor_content = "# Пример Markdown\n\n## **0. Общая информация**\n\n## **1. Основные данные**\n\n## **2. Результаты анализа**\n\n### **Подзаголовок**\n\n### Это заголовок уровня 3\n\nВозможности Markdown:\n1. **Жирный** и *курсивный* текст\n2. Нумерованные списки\n3. Маркированные пункты\n   - Элемент А\n   - Элемент Б\n\n### Пример HTML:\n<button style='background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: p#333333nter;'>Нажми меня!</button>\n\n### Пример таблицы:\n| Столбец 1 | Столбец 2 | Столбец 3 |\n|-----------|-----------|-----------|\n| Строка 1, Колонка 1 | Строка 1, Колонка 2 | Строка 1, Колонка 3 |\n| Строка 2, Колонка 1 | Строка 2, Колонка 2 | Строка 2, Колонка 3 |\n\n> Это блок цитаты.\n\n---"
 
 # Преобразуйте картинку в Base64
-def image_to_base64(image_path):
+def image_path_to_base64(image_path):
     # уменьшить размер картинки и преобразовать в Base64
     with open(image_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
     return f"data:image/png;base64,{encoded_string}"
 
 # Получите Base64 строку
-logo_base64 = image_to_base64("logo.jpg")
+logo_base64 = image_path_to_base64("logo.jpg")
+
+if "header" not in st.session_state:
+    st.session_state.header = "ОТЧЕТ МЕТАБОСКАН - ТОЛЬКО ДЛЯ ВРАЧА"
+
+with st.sidebar:
+    st.write("**Изменения заголовка:**")
+    st.caption("Ввести в поле ниже")
+    # Используем session_state напрямую и обновляем его
+    new_header = st.text_input(
+        "Заголовок", 
+        value=st.session_state.header, 
+        label_visibility="collapsed"
+    )
+    
+    # Обновляем session_state при изменении
+    if new_header != st.session_state.header:
+        st.session_state.header = new_header
+        
+    st.write("**Справочник:**")
+    st.write("Картинка:")
+    st.code("![любое_название](data:image/...)", language="markdown")
+    st.caption("Можно получить через онлайн конвертер: https://www.base64-image.de/")
+
+    st.write("Перенос страницы:")
+    st.code("""<div style="page-break-after: always"></div>""", language="html")
+    st.write("Перенос строки:")
+    st.code("""<br>""", language="html")
+    st.write("Математические формулы:")
+    st.code("""log<sub>n</sub>10 = 2; E = mc<sup>2</sup>""", language="html")
+    st.write("Синий заголовок ##:")
+    st.code("""## **Текст заголовка**""", language="markdown")
+    
+    st.write("Голубой заголовок ###:")
+    st.code("""### **Текст заголовка**""", language="markdown")
+    
+    st.write("Таблица")
+    st.code("""| Столбец 1 | Столбец 2 | Столбец 3 |
+|-----------|-----------|-----------|
+| Строка 1, Колонка 1 | Строка 1, Колонка 2 | Строка 1, Колонка 3 |
+| Строка 2, Колонка 1 | Строка 2, Колонка 2 | Строка 2, Колонка 3 |""", language="markdown")
+    
 
 col1, col2 = st.columns([1, 1.414]) 
 
@@ -368,7 +416,7 @@ with col2:
                                         
                                         @top-right {{
                                             /* Заголовок справа */
-                                            content: "ОТЧЕТ МЕТАБОСКАН - ТОЛЬКО ДЛЯ ВРАЧА";
+                                            content: "{st.session_state.header}";
                                             font-family: 'Helvetica', 'Arial', sans-serif;
                                             font-size: 10pt;
                                             font-weight: bold;
@@ -500,14 +548,11 @@ with col2:
                                         font-weight: bold !important;
                                     }}
                                     
-                                    blockquote {{
-                                        border-left: 4px solid #ccc !important;
-                                        padding-left: 15px !important;
-                                        margin-left: 0 !important;
-                                        font-style: italic !important;
-                                        color: #555 !important;
-                                        margin: 10px 0 !important;
-                                        font-size: 11pt;
+                                    img {{
+                                        display: block !important;
+                                        margin-left: auto !important;
+                                        margin-right: auto !important;
+                                        
                                     }}
                                     
                                     strong, b {{
